@@ -13,17 +13,36 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class CosSimilarityServiceImpl implements CosSimilarityService {
+    /**
+     * 对比两个文本内容，利用余弦相似算法计算相似度
+     * @param context
+     * @param copyContext
+     * @return
+     */
     @Override
     public double getSimilarity(String context, String copyContext) {
 
         if(context == null || copyContext == null){
             return -1;
         }
+
+        /**
+         * 两个文本相同
+         */
+        if(context.equals(copyContext)){
+            return 1;
+        }
+
+        if(copyContext.equals("")){
+            return 0;
+        }
+
         //初始文本
         Map<String,Integer> originalWeightMap = new HashMap<String,Integer>();
         //copy文本
         Map<String,Integer> copyWeightMap = new HashMap<String,Integer>();
 
+        //为词分配词频
         int weight = 0;
         String word = "";
         StringReader sr = new StringReader(context);
@@ -46,6 +65,7 @@ public class CosSimilarityServiceImpl implements CosSimilarityService {
         throw new MyException("获取相似度时出错！");
         }
 
+        //为词分配词频
         StringReader sr2 = new StringReader(copyContext);
         IKSegmenter ikSegmenter2 = new IKSegmenter(sr2,true);
         try{
@@ -78,6 +98,8 @@ public class CosSimilarityServiceImpl implements CosSimilarityService {
             up += x*y;
         }
 
+
+        //计算余弦公式分母部分
         for(String key : originalWeightMap.keySet()){
             x = originalWeightMap.get(key).doubleValue();
             down1 += x*x;
@@ -98,6 +120,11 @@ public class CosSimilarityServiceImpl implements CosSimilarityService {
         return Double.parseDouble(nf.format(result*100));
     }
 
+    /**
+     * 将不是中文的字符去除
+     * @param lexeme
+     * @return
+     */
     public String formatWord(Lexeme lexeme){
         if(lexeme == null){
             return "";
